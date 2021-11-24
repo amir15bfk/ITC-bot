@@ -46,7 +46,7 @@ class Bot(BotBase):
       print("bot reconnected")
 
   async def on_message(self,message):
-    if message.content.startswith('>IT') or message.content.startswith('>it'):
+    if message.content.lower()=='>it':
       n = random.randint(3, 15)
       emoje = [":fire:",":star2:",":sunglasses:" ,":loudspeaker:"]
       title='C'*n+'!'+emoje[random.randrange(len(emoje))]

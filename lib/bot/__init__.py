@@ -6,9 +6,17 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord.errors import HTTPException, Forbidden
 from discord.ext.commands import (CommandNotFound, BadArgument, MissingRequiredArgument,
 								  CommandOnCooldown)
+from apscheduler.triggers.cron import CronTrigger
+
 import os
 import random
 from ..db import db
+from ..recom_bot import recom_bot
+
+
+import tracemalloc
+
+tracemalloc.start()
 
 PREFIX = ">"
 OWNER_IDS=[403096560914923531]
@@ -20,9 +28,9 @@ class Bot(BotBase):
     self.guild = None
     self.scheduler = AsyncIOScheduler()
     db.autosave(self.scheduler)
+    
     super().__init__(command_prefix=PREFIX, owner_ids=OWNER_IDS,
-    itents=Intents.all())
-  
+    itents=Intents.all())  
   def run(self,version):
     self.VERSION = version
     self.TOKEN = os.environ['TOKEN']
@@ -42,13 +50,24 @@ class Bot(BotBase):
     if not self.ready:
       self.ready =True 
       self.guild = self.get_guild(800009861982191617)
+      bot.scheduler.add_job(self.sendRecommandations, CronTrigger(hour="8,18,20"))
       self.scheduler.start()
       print("bot ready")
+      """
+      channel = self.get_channel(800009862792609816)
+      embed = Embed(title="update 0.0.4",description ="working now",color=0x00ff00,timestamp=datetime.utcnow())
+      embed.add_field(name ="version",value=self.VERSION,inline=True)
+      embed.add_field(name ="updates",value=" - we merge the ITC bot with youtube Recommendations bot \n- the ITC bot will send every day at (8 am,18 pm ,and 20 pm ) a youtube video in the Youtube Recommendation category",inline=True)
+      embed.add_field(name ="note",value="if you want a contribute in me just contact amir",inline=False)
+      embed.set_image(url=self.guild.icon_url)
+      embed.set_author(name="IT community bot" , icon_url=self.guild.icon_url)
+      embed.set_footer(text="by amir & hamza to ITC ❤️ ")
+      """
       channel = self.get_channel(860464413777330206)
-      embed = Embed(title="Now Online",description ="the bot is live",color=0x00ff00,timestamp=datetime.utcnow())
+      embed = Embed(title="is Online",description ="the bot is live",color=0x00ff00,timestamp=datetime.utcnow())
       embed.add_field(name ="version",value=self.VERSION,inline=True)
       embed.set_author(name="IT community bot" , icon_url=self.guild.icon_url)
-      embed.set_footer(text="made with love ")
+      embed.set_footer(text="by amir & hamza to ITC ❤️ ")
       await channel.send(embed=embed)
     else :
       print("bot reconnected")
@@ -90,6 +109,23 @@ class Bot(BotBase):
       embed.set_image(url="attachment://image.png")
       embed.set_footer(text="itc family ")
       await message.channel.send(file=file,embed=embed)
+  async def sendRecommandations(self): 
+    channel,news_card,videoUrl =recom_bot.get_recom()
+    channel = self.get_channel(channel)
+    
+    
+    msg = await channel.send(embed=news_card)
+    await msg.add_reaction('👍')
+    await msg.add_reaction('👎')
+    await msg.add_reaction('😂')
+    await msg.add_reaction('😍')
+    await msg.add_reaction('🤩')
+    await msg.add_reaction('😯')
+    await msg.add_reaction('😡')
+    await msg.add_reaction('🔥')
+    await msg.add_reaction('😠')
+   
+  
 
 
 bot = Bot()
